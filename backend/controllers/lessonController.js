@@ -6,7 +6,7 @@ const Course = require("../models/courseModel");
 // ----------------------------
 exports.createLesson = async (req, res) => {
   try {
-    const { title, content, courseId } = req.body;
+    const { title, content, videoUrl, courseId } = req.body;
 
     // Verify course exists
     const course = await Course.findById(courseId);
@@ -20,6 +20,7 @@ exports.createLesson = async (req, res) => {
     const lesson = await Lesson.create({
       title,
       content,
+      videoUrl,
       course: courseId,
     });
 
@@ -71,9 +72,10 @@ exports.updateLesson = async (req, res) => {
       return res.status(403).json({ message: "Not authorized" });
     }
 
-    const { title, content } = req.body;
+    const { title, content, videoUrl } = req.body;
     lesson.title = title || lesson.title;
     lesson.content = content || lesson.content;
+    lesson.videoUrl = videoUrl || lesson.videoUrl;
 
     await lesson.save();
     res.json({ message: "Lesson updated", lesson });

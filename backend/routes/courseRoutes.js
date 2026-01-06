@@ -7,6 +7,7 @@ const {
   updateCourse,
   deleteCourse,
   searchCourses, // ✅ Added import
+  getMyCourses,
 } = require("../controllers/courseController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -18,6 +19,9 @@ const allowRoles = require("../middleware/roleMiddleware");
 
 // Create a new course (Instructor only)
 router.post("/create", protect, allowRoles("instructor"), createCourse);
+
+// Get courses created by the logged-in instructor
+router.get("/my-courses", protect, allowRoles("instructor"), getMyCourses);
 
 // Search and filter courses (Public) ✅ should come before /:id
 router.get("/search", searchCourses);

@@ -67,7 +67,8 @@ exports.getAllCourses = async (req, res) => {
       ];
     }
 
-    if (category) query.category = category;
+    // allow case-insensitive category filtering (e.g., 'programming' vs 'Programming')
+    if (category) query.category = { $regex: `^${category}$`, $options: 'i' };
     if (level) query.level = level;
 
     // Sorting logic
@@ -152,6 +153,23 @@ exports.deleteCourse = async (req, res) => {
 
     await course.deleteOne();
     res.json({ message: "Course deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// ----------------------------
+// Get courses created by the logged-in instructor
+// ----------------------------
+exports.getMyCourses = async (req, res) => {
+  try {
+    // Ensure user is authenticated (middleware should provide req.user)
+    const instructorId = req.user && req.user._id;
+    if (!instructorId) return res.status(401).json({ message: 'Not authenticated' });
+
+    const courses = await Course.find({ instructor: instructorId }).populate('instructor', 'name email');
+
+    res.status(200).json({ count: courses.length, courses });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
