@@ -1,6 +1,6 @@
 const User = require("../models/userModel");
 const Course = require("../models/courseModel");
-const generateCertificate = require("../tests/utils/certificateGenerator");
+const generateCertificate = require("../utils/certificateGenerator");
 const path = require("path");
 
 exports.getCertificate = async (req, res) => {
