@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const Course = require("../models/courseModel");
 const generateCertificate = require("../utils/certificateGenerator");
 const path = require("path");
+const fs = require("fs");
 
 exports.getCertificate = async (req, res) => {
   try {
@@ -21,9 +22,27 @@ exports.getCertificate = async (req, res) => {
 
     // Generate certificate
     const outputPath = path.join(__dirname, "../certificates");
+    if (!fs.existsSync(outputPath)) {
+      fs.mkdirSync(outputPath, { recursive: true });
+    }
     const filePath = await generateCertificate(student.name, course.title, outputPath);
 
     res.download(filePath, `${course.title}-certificate.pdf`);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.downloadCertificate = async (req, res) => {
+  try {
+    const { filename } = req.params;
+    const filePath = path.join(__dirname, "../certificates", filename);
+    
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ message: "Certificate not found" });
+    }
+    
+    res.download(filePath, filename);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

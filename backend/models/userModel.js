@@ -17,6 +17,8 @@ const userSchema = new mongoose.Schema({
     {
       quiz: { type: mongoose.Schema.Types.ObjectId, ref: "Quiz" }, // reference to Quiz
       score: { type: Number }, // student's score
+      total: { type: Number }, // total questions
+      passed: { type: Boolean, default: false }, // whether student passed
       completedAt: { type: Date, default: Date.now }, // timestamp of completion
     }
   ],

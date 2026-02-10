@@ -1,6 +1,9 @@
 const Quiz = require("../models/quizModel");
 const Course = require("../models/courseModel");
 const User = require("../models/userModel");
+const generateCertificate = require("../utils/certificateGenerator");
+const path = require("path");
+const fs = require("fs");
 
 // Create a new quiz (Instructor only)
 exports.createQuiz = async (req, res) => {
@@ -36,24 +39,79 @@ exports.getQuizzesByCourse = async (req, res) => {
   }
 };
 
+// Get single quiz by ID
+exports.getQuizById = async (req, res) => {
+  try {
+    const quiz = await Quiz.findById(req.params.quizId).populate('course');
+    if (!quiz) return res.status(404).json({ message: "Quiz not found" });
+    res.json(quiz);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Submit quiz answers (Student only)
 exports.submitQuiz = async (req, res) => {
   try {
-    const { answers } = req.body; // [{questionId, selectedOption}]
-    const quiz = await Quiz.findById(req.params.quizId);
+    const { answers } = req.body; // Array of selected option indexes
+    const quiz = await Quiz.findById(req.params.quizId).populate('course');
     if (!quiz) return res.status(404).json({ message: "Quiz not found" });
 
     let score = 0;
     quiz.questions.forEach((q, idx) => {
-      if (answers[idx]?.selectedOption === q.answer) score++;
+      // answers[idx] is the selected option index (number)
+      if (answers[idx] === q.correctAnswer) score++;
     });
 
-    // Save score to user's record (optional)
-    if (!req.user.quizResults) req.user.quizResults = [];
-    req.user.quizResults.push({ quiz: quiz._id, score });
-    await req.user.save();
+    const total = quiz.questions.length;
+    const percentage = (score / total) * 100;
+    const passed = percentage >= 70;
 
-    res.json({ message: "Quiz submitted", score, total: quiz.questions.length });
+    // Save score to user's record
+    const user = await User.findById(req.user._id);
+    if (!user.quizResults) user.quizResults = [];
+    
+    // Check if user already took this quiz
+    const existingResultIndex = user.quizResults.findIndex(
+      r => r.quiz && r.quiz.toString() === quiz._id.toString()
+    );
+    
+    if (existingResultIndex >= 0) {
+      // Update existing result if new score is higher
+      if (score > user.quizResults[existingResultIndex].score) {
+        user.quizResults[existingResultIndex].score = score;
+        user.quizResults[existingResultIndex].total = total;
+        user.quizResults[existingResultIndex].passed = passed;
+      }
+    } else {
+      user.quizResults.push({ quiz: quiz._id, score, total, passed });
+    }
+    await user.save();
+
+    // Generate certificate if passed
+    let certificateUrl = null;
+    if (passed && quiz.course) {
+      try {
+        const outputPath = path.join(__dirname, "../certificates");
+        // Create certificates directory if it doesn't exist
+        if (!fs.existsSync(outputPath)) {
+          fs.mkdirSync(outputPath, { recursive: true });
+        }
+        const filePath = await generateCertificate(user.name, quiz.course.title, outputPath);
+        certificateUrl = `/api/certificates/download/${path.basename(filePath)}`;
+      } catch (certError) {
+        console.error("Certificate generation error:", certError);
+      }
+    }
+
+    res.json({ 
+      message: passed ? "Congratulations! You passed!" : "Quiz submitted", 
+      score, 
+      total,
+      percentage,
+      passed,
+      certificateUrl
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

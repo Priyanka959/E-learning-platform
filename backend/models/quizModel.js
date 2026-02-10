@@ -5,9 +5,9 @@ const quizSchema = new mongoose.Schema({
   course: { type: mongoose.Schema.Types.ObjectId, ref: "Course", required: true },
   questions: [
     {
-      question: { type: String, required: true },
+      questionText: { type: String, required: true },
       options: [{ type: String, required: true }], // multiple-choice options
-      answer: { type: String, required: true },    // correct answer
+      correctAnswer: { type: Number, required: true }, // index of correct option (0-based)
     }
   ],
   createdAt: { type: Date, default: Date.now },
