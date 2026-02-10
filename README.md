@@ -1,6 +1,6 @@
 # Nexus - E-Learning Platform
 
-![Nexus E-Learning Platform](frontend/public/gitimage.png)
+![Nexus E-Learning Platform](./frontend/public/gitimage.png)
 
 A modern, full-stack e-learning platform built with React and Node.js, featuring a sleek dark-themed UI with course management, quizzes, progress tracking, and certificate generation.
 
