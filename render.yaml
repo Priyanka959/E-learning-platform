@@ -1,0 +1,41 @@
+# Render Blueprint - Infrastructure as Code
+# Deploy both frontend and backend from this single file
+
+services:
+  # Backend API Service
+  - type: web
+    name: elearning-backend
+    runtime: node
+    region: oregon
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false  # Set manually in Render dashboard
+      - key: JWT_SECRET
+        sync: false  # Set manually in Render dashboard
+      - key: JWT_EXPIRES_IN
+        value: 7d
+    healthCheckPath: /api/courses
+
+  # Frontend Static Site
+  - type: web
+    name: elearning-frontend
+    runtime: static
+    region: oregon
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: elearning-backend
+          property: host
