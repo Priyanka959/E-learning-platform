@@ -243,6 +243,69 @@ Clean lesson view with progress tracking and quiz integration.
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
+## Deployment
+
+### Deploy to Render (Recommended)
+
+#### Step 1: Set Up MongoDB Atlas
+1. Create an account at [mongodb.com/atlas](https://www.mongodb.com/cloud/atlas)
+2. Create a free M0 cluster
+3. Click **Connect** → **Connect your application**
+4. Copy the connection string
+
+#### Step 2: Push to GitHub
+```bash
+git add .
+git commit -m "Prepare for deployment"
+git push origin main
+```
+
+#### Step 3: Deploy Backend on Render
+1. Go to [render.com](https://render.com) → **New** → **Web Service**
+2. Connect your GitHub repo
+3. Configure:
+   - **Name**: `elearning-backend`
+   - **Root Directory**: `backend`
+   - **Build Command**: `npm install`
+   - **Start Command**: `npm start`
+4. Add environment variables:
+   - `MONGO_URI`: Your MongoDB Atlas connection string
+   - `JWT_SECRET`: A secure random string
+   - `NODE_ENV`: `production`
+   - `FRONTEND_URL`: Your frontend URL (add after deploying frontend)
+5. Click **Create Web Service** and copy the URL
+
+#### Step 4: Deploy Frontend on Render
+1. **New** → **Static Site**
+2. Configure:
+   - **Name**: `elearning-frontend`
+   - **Root Directory**: `frontend`
+   - **Build Command**: `npm install && npm run build`
+   - **Publish Directory**: `dist`
+3. Add environment variable:
+   - `VITE_API_URL`: Your backend URL (e.g., `https://elearning-backend.onrender.com`)
+4. Click **Create Static Site**
+
+#### Step 5: Update CORS
+Go back to your backend service and add/update:
+- `FRONTEND_URL`: Your frontend URL (e.g., `https://elearning-frontend.onrender.com`)
+
+### Environment Variables Reference
+
+**Backend (.env)**
+| Variable | Description |
+|----------|-------------|
+| `MONGO_URI` | MongoDB connection string |
+| `JWT_SECRET` | Secret key for JWT tokens |
+| `NODE_ENV` | `development` or `production` |
+| `PORT` | Server port (default: 5000) |
+| `FRONTEND_URL` | Frontend URL for CORS |
+
+**Frontend (.env)**
+| Variable | Description |
+|----------|-------------|
+| `VITE_API_URL` | Backend API URL |
+
 ## License
 
 This project is licensed under the ISC License.
