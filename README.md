@@ -99,7 +99,7 @@ elearning/
 │   └── server.js
 ├── frontend/
 │   ├── context/
-│   │   └── AuthContext.jsx       # Authentication state
+│   │   └── AuthContext.jsx       # Authentication
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── Navbar.jsx
