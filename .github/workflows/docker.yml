@@ -14,8 +14,29 @@ env:
   FRONTEND_IMAGE_NAME: ${{ github.repository }}/frontend
 
 jobs:
+  test-backend:
+    name: Run Backend Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Run tests
+        working-directory: ./backend
+        run: npm test
+
   build-backend:
     name: Build Backend Image
+    needs: test-backend
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -60,6 +81,7 @@ jobs:
 
   build-frontend:
     name: Build Frontend Image
+    needs: test-backend
     runs-on: ubuntu-latest
     permissions:
       contents: read
