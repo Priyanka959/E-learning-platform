@@ -28,7 +28,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           {/* Contained pages */}
-          <Route path="/courses" element={<Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}><Courses /></Container>} />
+          <Route path="/courses" element={<Courses />} />
           <Route path="/courses/:id" element={<Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}><CourseDetail /></Container>} />
           <Route path="/my-courses" element={<Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>{isAuthenticated ? <MyCourses /> : <Login />}</Container>} />
           <Route path="/create-course" element={<Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>{isAuthenticated && user?.role === 'instructor' ? <CreateCourse /> : <Home />}</Container>} />

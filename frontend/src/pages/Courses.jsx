@@ -13,6 +13,7 @@ import { API_URL } from '../config';
 const Courses = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     search: '',
@@ -40,6 +41,7 @@ const Courses = () => {
   const fetchCourses = async () => {
     try {
       setLoading(true);
+      setError('');
       const params = new URLSearchParams();
 
       if (filters.search) params.append('search', filters.search);
@@ -49,8 +51,10 @@ const Courses = () => {
 
       const response = await axios.get(`${API_URL}/api/courses?${params}`);
       setCourses(response.data.courses || []);
-    } catch (error) {
-      console.error('Error fetching courses:', error);
+    } catch (err) {
+      console.error('Error fetching courses:', err);
+      setError('Failed to load courses. Please check your connection and try again.');
+      setCourses([]);
     } finally {
       setLoading(false);
     }
@@ -265,8 +269,38 @@ const Courses = () => {
           )}
         </Box>
 
-        {/* Loading State */}
-        {loading ? (
+        {/* Error State */}
+        {error && (
+          <Box
+            sx={{
+              textAlign: 'center',
+              py: 8,
+              px: 4,
+              background: 'rgba(239, 68, 68, 0.05)',
+              border: '1px solid rgba(239, 68, 68, 0.2)',
+              borderRadius: '16px',
+              mb: 4,
+            }}
+          >
+            <Typography sx={{ color: '#ef4444', fontWeight: 600, mb: 1 }}>
+              Could not load courses
+            </Typography>
+            <Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.9rem', mb: 2 }}>
+              {error}
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={fetchCourses}
+              sx={{ borderColor: 'rgba(239,68,68,0.4)', color: '#ef4444', '&:hover': { borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.05)' } }}
+            >
+              Retry
+            </Button>
+          </Box>
+        )}
+
+        {/* Loading / Grid - only shown when no error */}
+        {!error && loading ? (
           <Box
             sx={{
               display: 'flex',
